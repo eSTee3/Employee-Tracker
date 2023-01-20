@@ -1,6 +1,6 @@
 USE company_db;
 
-INSTERT INTO department(name)
+INSERT INTO department(name)
 VALUES ('Information Technology'),
 ('Human Resources'),
 ('Sales Transaction Management'),
@@ -8,7 +8,7 @@ VALUES ('Information Technology'),
 ('Loss Prevention'),
 ('Shipping and Receiving');
 
-INSTERT INTO role(title, salary, department_id)
+INSERT INTO role(title, salary, department_id)
 VALUES ('IT Manager', 134340.23, 1),
 ('Reliability Engineer', 111150.87, 1),
 ('IT Director', 351520.54, 1),
@@ -20,7 +20,7 @@ VALUES ('IT Manager', 134340.23, 1),
 ('3rd Shift LP Lead', 59214.97, 5),
 ('Corporate LP Guard', 41856.36, 5);
 
-INSTERT INTO employee(first_name, last_name, role_id, manager_id)
+INSERT INTO employee(first_name, last_name, role_id, manager_id)
 VALUES ('Mr.', 'Krabs', 3, NULL),
 ('SpongeBob', 'Squarepants', 1, 1),
 ('Squidward', 'Tentacles', 6, NULL),
