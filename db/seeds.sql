@@ -16,7 +16,7 @@ VALUES ('IT Manager', 134340.23, 1),
 ('HR Team Lead', 64133.29, 2),
 ('Product Manager', 112335.03, 3),
 ('Assistant Buyer', 74430.84, 4),
-('Shipping Supervisor', 38973.00, 6)
+('Shipping Supervisor', 38973.00, 6),
 ('3rd Shift LP Lead', 59214.97, 5),
 ('Corporate LP Guard', 41856.36, 5);
 
