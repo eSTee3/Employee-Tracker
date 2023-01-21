@@ -21,6 +21,7 @@ function initialList() {
     inquirer
     .prompt({
         type: 'list',
+        pageSize: 12,
         name: 'task',
         message: 'Please choose an action:',
         choices: [
@@ -155,7 +156,7 @@ const addNewDepartment = () => {
       {
         type: 'input',
         name: 'deptName',
-        message: "Department Name: ",
+        message:"Department Name:",
       }
     ])
       .then(answer => {
@@ -202,12 +203,12 @@ const addNewRole = () => {
       {
         type: 'input',
         name: 'roleName',
-        message: "Role Name: ",
+        message:"Role Name:",
       },
       {
         type: 'input',
         name: 'roleSalary',
-        message: "Role's Salary: ",
+        message:"Role's Salary:",
       }
     ])
       .then(answer => {
@@ -219,8 +220,9 @@ const addNewRole = () => {
         inquirer.prompt([
               {
                 type: 'list',
+                pageSize: 12,
                 name: 'dept',
-                message: "Select Department: ",
+                message:"Select Department:",
                 choices: dept
               }
             ])
@@ -264,9 +266,7 @@ const addNewEmployee = () => {
             value: id, title: `${title}`, salary: `${salary}`
           }));
     
-          console.log("\n\n\n");  
-          console.table(res);
-          console.log("NOTE: Please reference the above table when selecting a role.\n")
+        console.log("\n");  
 
           promptInsert(roleChoices);
         });
@@ -277,41 +277,43 @@ const addNewEmployee = () => {
       {
         type: 'input',
         name: 'firstName',
-        message: "First Name: ",
+        message:"First Name:",
       },
       {
         type: 'input',
         name: 'lastName',
-        message: "Last Name: ",
+        message:"Last Name:",
       }
     ])
       .then(answer => {
         let crit = [answer.firstName, answer.lastName]
         let roleSql = `SELECT * FROM roles`;
-      connection.query(roleSql, (error, data) => {
+      connection.query(roleSql, (error, res) => {
         if (error) throw error; 
-        let roles = data.map(({ id, name }) => ({ name: name, value: id }));
+        let roles = res.map(({ id, title }) => ({ name: title, value: id }));
         inquirer.prompt([
               {
                 type: 'list',
+                pageSize: 12,
                 name: 'role',
-                message: "Select Role: ",
+                message:"Select Role:",
                 choices: roles
               }
             ])
-        // Provides the list of Role ID's to choose from
+
             .then(roleChoice => {
                 let role = roleChoice.role;
             crit.push(role);
-            let managerSql =  `SELECT * FROM employees`;
-            connection.query(managerSql, (error, data) => {
+            let sql =  `SELECT * FROM employees`;
+            connection.query(sql, (error, res) => {
                 if (error) throw error;
-                let managers = data.map(({ id, first_name, last_name }) => ({ name: first_name + " "+ last_name, value: id }));
+                let managers = res.map(({ id, first_name, last_name }) => ({ name: first_name + " "+ last_name, value: id }));
                 inquirer.prompt([
                 {
                     type: 'list',
+                    pageSize: 12,
                     name: 'manager',
-                    message: "Select Manager: ",
+                    message:"Select Manager:",
                     choices: managers
                 }
                 ])
@@ -354,7 +356,9 @@ const updateEmployeeRole = () => {
     connection.query(sql, (error, response) => {
       if (error) throw error;
       let employeeNamesArray = [];
-      response.forEach((employee) => {employeeNamesArray.push(`${employee.first_name} ${employee.last_name}`);});
+      response.forEach((employee) => {
+        employeeNamesArray.push(`${employee.first_name} ${employee.last_name}`);
+    });
 
       let sql =     `SELECT roles.id,
                         roles.title
@@ -375,6 +379,7 @@ const updateEmployeeRole = () => {
             {
               name: 'chosenRole',
               type: 'list',
+              pageSize: 12,
               message: 'Choose new Role:',
               choices: rolesArray
             }
@@ -397,15 +402,17 @@ const updateEmployeeRole = () => {
               }
             });
 
-            let sqls = `UPDATE employees SET employees.role_id = ? WHERE employees.id = ?`;
+            let sql = `UPDATE employees SET employees.role_id = ? WHERE employees.id = ?`;
             connection.query(
-              sqls,
+              sql,
               [newTitleId, employeeId],
               (error) => {
                 if (error) throw error;
 
                 // Validation message, confirming employee role has been updated
                 console.log("\n ==> Employee Role updated successfully <== \n");
+
+
                 initialList();
             }
         );
