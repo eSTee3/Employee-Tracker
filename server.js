@@ -76,8 +76,8 @@ function initialList() {
 function showAllDepartments() {
     console.log('Here are all the Departments I have:\n');
 
-    let query =
-        `SELECT name as "Department",
+    let query = `
+        SELECT name as "Department",
         id as "Department ID"
         FROM departments
         ;`
@@ -95,8 +95,8 @@ function showAllDepartments() {
 function showAllRoles() {
     console.log('Here are all the Roles I have:\n');
 
-    let query =
-        `SELECT role.title AS "Job Title",
+    let query = `
+        SELECT role.title AS "Job Title",
             role.id AS "Job ID",
             dept.name AS "Department",
             role.salary AS "Salary"
@@ -118,8 +118,8 @@ function showAllRoles() {
 function showAllEmployees() {
     console.log('Here are all the employees I have:\n');
 
-    let query =
-        `SELECT emp.id AS "Employee ID",
+    let query =`
+        SELECT emp.id AS "Employee ID",
             emp.first_name AS "First Name",
             emp.last_name AS "Last Name",
             role.title AS "Job Title",
@@ -161,8 +161,10 @@ const addNewDepartment = () => {
     ])
       .then(answer => {
         let crit = [answer.deptName]
-            let sql =   `INSERT INTO departments (name)
-                        VALUES (?)`;
+            let sql = `
+                INSERT INTO departments (name)
+                VALUES (?)
+                `;
             connection.query(sql, crit, (error) => {
             if (error) throw error;
 
@@ -178,10 +180,11 @@ const addNewDepartment = () => {
 
 const addNewRole = () => {
     // Provides a list of roles in the system, for help with choosing a role
-    var query =
-        `SELECT dept.id,
+    var query = `
+        SELECT dept.id,
             dept.name 
-        FROM departments dept`;
+        FROM departments dept
+        `;
       
         connection.query(query, function (err, res) {
           if (err) throw err;
@@ -213,7 +216,9 @@ const addNewRole = () => {
     ])
       .then(answer => {
         let crit = [answer.roleName, answer.roleSalary]
-        let deptSQL = `SELECT * FROM departments`;
+        let deptSQL = `
+            SELECT * FROM departments
+            `;
       connection.query(deptSQL, (error, data) => {
         if (error) throw error; 
         let dept = data.map(({ id, name }) => ({ name: name, value: id }));
@@ -253,11 +258,12 @@ const addNewRole = () => {
 // Add a new Employee
 const addNewEmployee = () => {
     // Provides a list of roles in the system, for help with choosing a role
-    var query =
-        `SELECT role.id,
+    var query = `
+        SELECT role.id,
             role.title,
             role.salary 
-        FROM roles role`;
+        FROM roles role
+        `;
       
         connection.query(query, function (err, res) {
           if (err) throw err;
@@ -287,7 +293,9 @@ const addNewEmployee = () => {
     ])
       .then(answer => {
         let crit = [answer.firstName, answer.lastName]
-        let roleSql = `SELECT * FROM roles`;
+        let roleSql = `
+            SELECT * FROM roles
+            `;
       connection.query(roleSql, (error, res) => {
         if (error) throw error; 
         let roles = res.map(({ id, title }) => ({ name: title, value: id }));
@@ -304,7 +312,9 @@ const addNewEmployee = () => {
             .then(roleChoice => {
                 let role = roleChoice.role;
             crit.push(role);
-            let sql =  `SELECT * FROM employees`;
+            let sql =  `
+                SELECT * FROM employees
+                `;
             connection.query(sql, (error, res) => {
                 if (error) throw error;
                 let managers = res.map(({ id, first_name, last_name }) => ({ name: first_name + " "+ last_name, value: id }));
@@ -343,27 +353,31 @@ const addNewEmployee = () => {
 // THEN I am prompted to select an employee to update and their new role and this information is updated in the database
 
 const updateEmployeeRole = () => {
-    let sql =       `SELECT employees.id,
-                        employees.first_name,
-                        employees.last_name,
-                        roles.id AS "role_id"
-                    FROM employees,
-                        roles,
-                        departments
-                    WHERE departments.id = roles.department_id
-                        AND roles.id = employees.role_id`;
+    let sql0 = `
+        SELECT employees.id,
+            employees.first_name,
+            employees.last_name,
+            roles.id AS "role_id"
+        FROM employees,
+            roles,
+            departments
+        WHERE departments.id = roles.department_id
+            AND roles.id = employees.role_id
+        `;
 
-    connection.query(sql, (error, response) => {
+    connection.query(sql0, (error, response) => {
       if (error) throw error;
       let employeeNamesArray = [];
       response.forEach((employee) => {
         employeeNamesArray.push(`${employee.first_name} ${employee.last_name}`);
     });
 
-      let sql =     `SELECT roles.id,
-                        roles.title
-                    FROM roles`;
-      connection.query(sql, (error, response) => {
+      let sql1 = `
+        SELECT roles.id,
+        roles.title
+        FROM roles
+        `;
+      connection.query(sql1, (error, response) => {
         if (error) throw error;
         let rolesArray = [];
         response.forEach((role) => {rolesArray.push(role.title);});
@@ -402,9 +416,13 @@ const updateEmployeeRole = () => {
               }
             });
 
-            let sql = `UPDATE employees SET employees.role_id = ? WHERE employees.id = ?`;
+            let sql2 = `
+                UPDATE employees
+                SET employees.role_id = ?
+                WHERE employees.id = ?
+                `;
             connection.query(
-              sql,
+                sql2,
               [newTitleId, employeeId],
               (error) => {
                 if (error) throw error;
