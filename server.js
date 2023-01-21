@@ -30,6 +30,7 @@ function initialList() {
             "Add a new Role",
             "Add a new Department",
             "Add a new Employee",
+            "Update an Employee's Role",
             "I don't need anything else."
         ]
     }).then(function ({ task }) {
@@ -56,6 +57,10 @@ function initialList() {
 
             case "Add a new Employee":
                 addNewEmployee();
+                break;
+
+            case "Update an Employee's Role":
+                updateEmployeeRole();
                 break;
            
             case "I don't need anything else.":
@@ -173,8 +178,9 @@ const addNewDepartment = () => {
 const addNewRole = () => {
     // Provides a list of roles in the system, for help with choosing a role
     var query =
-          `SELECT dept.id, dept.name 
-            FROM departments dept`
+        `SELECT dept.id,
+            dept.name 
+        FROM departments dept`;
       
         connection.query(query, function (err, res) {
           if (err) throw err;
@@ -246,8 +252,10 @@ const addNewRole = () => {
 const addNewEmployee = () => {
     // Provides a list of roles in the system, for help with choosing a role
     var query =
-          `SELECT role.id, role.title, role.salary 
-            FROM roles role`
+        `SELECT role.id,
+            role.title,
+            role.salary 
+        FROM roles role`;
       
         connection.query(query, function (err, res) {
           if (err) throw err;
@@ -332,3 +340,76 @@ const addNewEmployee = () => {
 // TODO: WHEN I choose to update an employee role
 // THEN I am prompted to select an employee to update and their new role and this information is updated in the database
 
+const updateEmployeeRole = () => {
+    let sql =       `SELECT employees.id,
+                        employees.first_name,
+                        employees.last_name,
+                        roles.id AS "role_id"
+                    FROM employees,
+                        roles,
+                        departments
+                    WHERE departments.id = roles.department_id
+                        AND roles.id = employees.role_id`;
+
+    connection.query(sql, (error, response) => {
+      if (error) throw error;
+      let employeeNamesArray = [];
+      response.forEach((employee) => {employeeNamesArray.push(`${employee.first_name} ${employee.last_name}`);});
+
+      let sql =     `SELECT roles.id,
+                        roles.title
+                    FROM roles`;
+      connection.query(sql, (error, response) => {
+        if (error) throw error;
+        let rolesArray = [];
+        response.forEach((role) => {rolesArray.push(role.title);});
+
+        inquirer
+          .prompt([
+            {
+              name: 'chosenEmployee',
+              type: 'list',
+              message: 'Choose Employee to update:',
+              choices: employeeNamesArray
+            },
+            {
+              name: 'chosenRole',
+              type: 'list',
+              message: 'Choose new Role:',
+              choices: rolesArray
+            }
+          ])
+          .then((answer) => {
+            let newTitleId, employeeId;
+
+            response.forEach((role) => {
+              if (answer.chosenRole === role.title) {
+                newTitleId = role.id;
+              }
+            });
+
+            response.forEach((employee) => {
+              if (
+                answer.chosenEmployee ===
+                `${employee.first_name} ${employee.last_name}`
+              ) {
+                employeeId = employee.id;
+              }
+            });
+
+            let sqls = `UPDATE employees SET employees.role_id = ? WHERE employees.id = ?`;
+            connection.query(
+              sqls,
+              [newTitleId, employeeId],
+              (error) => {
+                if (error) throw error;
+
+                // Validation message, confirming employee role has been updated
+                console.log("\n ==> Employee Role updated successfully <== \n");
+                initialList();
+            }
+        );
+        });
+    });
+});
+};
