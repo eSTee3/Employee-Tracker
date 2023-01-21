@@ -28,6 +28,7 @@ function initialList() {
             "View all Roles",
             "View all Employees",
             "Add a new Role",
+            "Add a new Department",
             "Add a new Employee",
             "I don't need anything else."
         ]
@@ -47,6 +48,10 @@ function initialList() {
 
             case "Add a new Role":
                 addNewRole();
+                break;
+            
+            case "Add a new Department":
+                addNewDepartment();
                 break;
 
             case "Add a new Employee":
@@ -139,73 +144,103 @@ function showAllEmployees() {
         
 }
 
-// TODO: WHEN I choose to add a department
-// THEN I am prompted to enter the name of the department and that department is added to the database
+const addNewDepartment = () => {
+    // Starts the question/answer process for creation of a new department
+    inquirer.prompt([
+      {
+        type: 'input',
+        name: 'deptName',
+        message: "Department Name: ",
+      }
+    ])
+      .then(answer => {
+        let crit = [answer.deptName]
+            let sql =   `INSERT INTO departments (name)
+                        VALUES (?)`;
+            connection.query(sql, crit, (error) => {
+            if (error) throw error;
 
-// TODO: WHEN I choose to add a role
-// THEN I am prompted to enter the name, salary, and department for the role and that role is added to the database
-
-// Add a New Role
-const addNewRole = () => {
-    const sql = 'SELECT * FROM departments'
-    connection.query(sql, (error, response) => {
-        if (error) throw error;
-        let deptNamesArray = [];
-        response.forEach((department) => {deptNamesArray.push(department.department_name);});
-        deptNamesArray.push('Create Department');
-        inquirer
-          .prompt([
-            {
-              name: 'departmentName',
-              type: 'list',
-              message: 'Select a Department for New Role: ',
-              choices: deptNamesArray
-            }
-          ])
-          .then((answer) => {
-            if (answer.departmentName === 'Create Department') {
-              this.addDepartment();
-            } else {
-              addRoleResume(answer);
-            }
-          });
+            // Validation message, confirming department has bee added
+            console.log("\n ==> Department added successfully <== \n");
   
-        const addRoleResume = (departmentData) => {
-          inquirer
-            .prompt([
+            initialList();
+                });
+            });
+
+};
+
+
+const addNewRole = () => {
+    // Provides a list of roles in the system, for help with choosing a role
+    var query =
+          `SELECT dept.id, dept.name 
+            FROM departments dept`
+      
+        connection.query(query, function (err, res) {
+          if (err) throw err;
+      
+          let deptChoices = res.map(({ id, name }) => ({
+            value: id, name: `${name}`
+          }));
+    
+          console.log("\n\n\n");  
+          console.table(res);
+          console.log("NOTE: Please reference the above table when selecting a Department.\n")
+
+          promptRoles(deptChoices);
+        });
+    }
+    // Starts the question/answer process for creation of a new employee
+    function promptRoles(deptChoices) {
+    inquirer.prompt([
+      {
+        type: 'input',
+        name: 'roleName',
+        message: "Role Name: ",
+      },
+      {
+        type: 'input',
+        name: 'roleSalary',
+        message: "Role's Salary: ",
+      }
+    ])
+      .then(answer => {
+        let crit = [answer.roleName, answer.roleSalary]
+        let deptSQL = `SELECT * FROM departments`;
+      connection.query(deptSQL, (error, data) => {
+        if (error) throw error; 
+        let dept = data.map(({ id, name }) => ({ name: name, value: id }));
+        inquirer.prompt([
               {
-                name: 'newRole',
-                type: 'input',
-                message: 'Provide a name for the New Role: ',
-                validate: validate.validateString
-              },
-              {
-                name: 'salary',
-                type: 'input',
-                message: 'Provide Salary for Role: ',
-                validate: validate.validateSalary
+                type: 'list',
+                name: 'dept',
+                message: "Select Department: ",
+                choices: dept
               }
             ])
-            .then((answer) => {
-              let createdRole = answer.newRole;
-              let departmentId;
-  
-              response.forEach((department) => {
-                if (departmentData.departmentName === department.department_name) {departmentId = department.id;}
-              });
-  
-              let sql =   `INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)`;
-              let crit = [createdRole, answer.salary, departmentId];
-  
-              connection.promise().query(sql, crit, (error) => {
-                if (error) throw error;
+        // Provides the list of Role ID's to choose from
+            .then(deptChoice => {
+                let depts = deptChoice.dept;
+            crit.push(depts);
 
-                initialList();
-              });
+        
+
+            let sql =   `INSERT INTO roles (title, salary, department_id)
+                        VALUES (?, ?, ?)`;
+            connection.query(sql, crit, (error) => {
+            if (error) throw error;
+
+            // Validation message, confirming role has bee added
+            console.log("\n ==> Role added successfully <== \n");
+  
+            initialList();
+                });
             });
-        };
-      });
-    };
+        });
+    });
+};
+
+
 
 // Add a new Employee
 const addNewEmployee = () => {
@@ -217,7 +252,7 @@ const addNewEmployee = () => {
         connection.query(query, function (err, res) {
           if (err) throw err;
       
-          const roleChoices = res.map(({ id, title, salary }) => ({
+          let roleChoices = res.map(({ id, title, salary }) => ({
             value: id, title: `${title}`, salary: `${salary}`
           }));
     
@@ -243,11 +278,11 @@ const addNewEmployee = () => {
       }
     ])
       .then(answer => {
-      const crit = [answer.firstName, answer.lastName]
-      const roleSql = `SELECT * FROM roles`;
+        let crit = [answer.firstName, answer.lastName]
+        let roleSql = `SELECT * FROM roles`;
       connection.query(roleSql, (error, data) => {
         if (error) throw error; 
-        const roles = data.map(({ id, name }) => ({ name: name, value: id }));
+        let roles = data.map(({ id, name }) => ({ name: name, value: id }));
         inquirer.prompt([
               {
                 type: 'list',
@@ -258,12 +293,12 @@ const addNewEmployee = () => {
             ])
         // Provides the list of Role ID's to choose from
             .then(roleChoice => {
-            const role = roleChoice.role;
+                let role = roleChoice.role;
             crit.push(role);
-            const managerSql =  `SELECT * FROM employees`;
+            let managerSql =  `SELECT * FROM employees`;
             connection.query(managerSql, (error, data) => {
                 if (error) throw error;
-                const managers = data.map(({ id, first_name, last_name }) => ({ name: first_name + " "+ last_name, value: id }));
+                let managers = data.map(({ id, first_name, last_name }) => ({ name: first_name + " "+ last_name, value: id }));
                 inquirer.prompt([
                 {
                     type: 'list',
@@ -274,12 +309,14 @@ const addNewEmployee = () => {
                 ])
                 //   Insterst the new Employee into the employees table
                     .then(managerChoice => {
-                      const manager = managerChoice.manager;
+                        let manager = managerChoice.manager;
                       crit.push(manager);
-                      const sql =   `INSERT INTO employees (first_name, last_name, role_id, manager_id)
+                      let sql =   `INSERT INTO employees (first_name, last_name, role_id, manager_id)
                                     VALUES (?, ?, ?, ?)`;
                       connection.query(sql, crit, (error) => {
                       if (error) throw error;
+            
+            // Validation message, confirming employee has bee added
             console.log("\n ==> Employee added successfully <== \n");
   
             initialList();
@@ -294,3 +331,4 @@ const addNewEmployee = () => {
 
 // TODO: WHEN I choose to update an employee role
 // THEN I am prompted to select an employee to update and their new role and this information is updated in the database
+
