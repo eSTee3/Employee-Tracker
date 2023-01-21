@@ -1,32 +1,25 @@
 USE company_db;
 
-INSERT INTO department(name)
-VALUES ('Information Technology'),
-('Human Resources'),
-('Sales Transaction Management'),
-('Purchasing and Procurement'),
-('Loss Prevention'),
-('Shipping and Receiving');
+INSERT INTO departments(name)
+VALUES('Hospitality'),
+('Food Service'),
+('Cleaning Service');
 
-INSERT INTO role(title, salary, department_id)
-VALUES ('IT Manager', 134340.23, 1),
-('Reliability Engineer', 111150.87, 1),
-('IT Director', 351520.54, 1),
-('HR Manager', 121410.20, 2),
-('HR Team Lead', 64133.29, 2),
-('Product Manager', 112335.03, 3),
-('Assistant Buyer', 74430.84, 4),
-('Shipping Supervisor', 38973.00, 6),
-('3rd Shift LP Lead', 59214.97, 5),
-('Corporate LP Guard', 41856.36, 5);
+INSERT INTO roles(title, salary, department_id)
+VALUES('Manager', 89612.61, 1),
+('Door Attendant', 51254.30, 1),
+('Head Chef', 78558.44, 2),
+('Sous Chef', 39714.20, 2),
+('Technician', 44255.83, 3),
+('Coordinator', 60122.05, 3);
 
-INSERT INTO employee(first_name, last_name, role_id, manager_id)
-VALUES ('Mr.', 'Krabs', 3, NULL),
-('SpongeBob', 'Squarepants', 1, 1),
-('Squidward', 'Tentacles', 6, NULL),
-('Pearl', 'Krabs', 2, 1),
-('Mrs.', 'Puff', 6, NULL),
-('Patrick', 'Star', 10, 7),
-('Sheldon', 'Plankton', 9, NULL),
-('Sandy', 'Squirrel', 4, NULL),
-('Karen', 'Plankton', 5, 8);
+INSERT INTO employees(first_name, last_name, role_id, manager_id)
+VALUES('Gill', 'Bates', 1, NULL),
+('Darnald', 'Sportsinegger', 2, 1),
+('Boaty', 'McBoatface', 2, 1),
+('Kneelahn', 'Crust', 3, NULL),
+('Troll', 'Bridges', 4, 4),
+('Gary', 'Pills', 4, 4),
+('Marsha', 'Stewort', 5, NULL),
+('Shy', 'Freeharry', 6, 7),
+('Dough', 'Boyd', 6, 7);
