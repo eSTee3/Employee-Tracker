@@ -21,7 +21,7 @@ function initialList() {
     inquirer
     .prompt({
         type: 'list',
-        pageSize: 12,
+        pageSize: 20,
         name: 'task',
         message: 'Please choose an action:',
         choices: [
@@ -37,32 +37,32 @@ function initialList() {
     }).then(function ({ task }) {
         switch(task) {
             case "View all Departments":
-                showAllDepartments();
-                break;
+              showAllDepartments();
+              break;
             
             case "View all Roles":
-                showAllRoles();
-                break;
+              showAllRoles();
+              break;
 
             case "View all Employees":
-                showAllEmployees();
-                break;
+              showAllEmployees();
+              break;
 
             case "Add a new Role":
-                addNewRole();
-                break;
+              addNewRole();
+              break;
             
             case "Add a new Department":
-                addNewDepartment();
-                break;
+              addNewDepartment();
+              break;
 
             case "Add a new Employee":
-                addNewEmployee();
-                break;
+              addNewEmployee();
+              break;
 
             case "Update an Employee's Role":
-                updateEmployeeRole();
-                break;
+              updateEmployeeRole();
+              break;
            
             case "I don't need anything else.":
                 console.log("\nApplication exited.  Have a great day!")
@@ -137,6 +137,7 @@ function showAllEmployees() {
             ON man.id=emp.manager_id
         GROUP BY emp.id,
             CASE WHEN emp.manager_id IS NULL THEN "Self"
+            WHEN emp.manager_id = emp.id THEN "Self"
             ELSE CONCAT(man.first_name," ",man.last_name)
             END
         ;`
@@ -181,9 +182,9 @@ const addNewDepartment = () => {
 const addNewRole = () => {
     // Provides a list of roles in the system, for help with choosing a role
     var query = `
-        SELECT dept.id,
-            dept.name 
-        FROM departments dept
+        SELECT id,
+          name 
+        FROM departments
         `;
       
         connection.query(query, function (err, res) {
@@ -231,7 +232,6 @@ const addNewRole = () => {
                 choices: dept
               }
             ])
-        // Provides the list of Role ID's to choose from
             .then(deptChoice => {
                 let depts = deptChoice.dept;
             crit.push(depts);
@@ -257,12 +257,12 @@ const addNewRole = () => {
 
 // Add a new Employee
 const addNewEmployee = () => {
-    // Provides a list of roles in the system, for help with choosing a role
+    // Provides a list of roles in the system
     var query = `
-        SELECT role.id,
-            role.title,
-            role.salary 
-        FROM roles role
+        SELECT id,
+            title,
+            salary 
+        FROM roles
         `;
       
         connection.query(query, function (err, res) {
@@ -313,7 +313,9 @@ const addNewEmployee = () => {
                 let role = roleChoice.role;
             crit.push(role);
             let sql =  `
-                SELECT * FROM employees
+                SELECT * 
+                FROM employees
+                WHERE manager_id is NULL
                 `;
             connection.query(sql, (error, res) => {
                 if (error) throw error;
@@ -327,7 +329,7 @@ const addNewEmployee = () => {
                     choices: managers
                 }
                 ])
-                //   Insterst the new Employee into the employees table
+                    // Insterst the new Employee into the employees table
                     .then(managerChoice => {
                         let manager = managerChoice.manager;
                       crit.push(manager);
@@ -336,105 +338,84 @@ const addNewEmployee = () => {
                       connection.query(sql, crit, (error) => {
                       if (error) throw error;
             
-            // Validation message, confirming employee has bee added
-            console.log("\n ==> Employee added successfully <== \n");
-  
-            initialList();
+                // Validation message, confirming employee has bee added
+                console.log("\n ==> Employee added successfully <== \n");      
+                initialList();
+
+                        });
+                    });
                 });
-              });
             });
-          });
-       });
+        });
     });
 };
 
 
-// TODO: WHEN I choose to update an employee role
-// THEN I am prompted to select an employee to update and their new role and this information is updated in the database
 
-const updateEmployeeRole = () => {
-    let sql0 = `
-        SELECT employees.id,
-            employees.first_name,
-            employees.last_name,
-            roles.id AS "role_id"
-        FROM employees,
-            roles,
-            departments
-        WHERE departments.id = roles.department_id
-            AND roles.id = employees.role_id
-        `;
-
-    connection.query(sql0, (error, response) => {
-      if (error) throw error;
-      let employeeNamesArray = [];
-      response.forEach((employee) => {
-        employeeNamesArray.push(`${employee.first_name} ${employee.last_name}`);
-    });
-
-      let sql1 = `
-        SELECT roles.id,
-        roles.title
-        FROM roles
-        `;
-      connection.query(sql1, (error, response) => {
-        if (error) throw error;
-        let rolesArray = [];
-        response.forEach((role) => {rolesArray.push(role.title);});
-
-        inquirer
-          .prompt([
-            {
-              name: 'chosenEmployee',
-              type: 'list',
-              message: 'Choose Employee to update:',
-              choices: employeeNamesArray
-            },
-            {
-              name: 'chosenRole',
-              type: 'list',
-              pageSize: 12,
-              message: 'Choose new Role:',
-              choices: rolesArray
-            }
-          ])
-          .then((answer) => {
-            let newTitleId, employeeId;
-
-            response.forEach((role) => {
-              if (answer.chosenRole === role.title) {
-                newTitleId = role.id;
+// Function to update an employee's Role
+function updateEmployeeRole() {
+  connection.query('SELECT * FROM employees', function (err, result) {
+    if (err) throw (err);
+    inquirer
+      .prompt([
+        {
+          name: "employeeName",
+          type: "list",
+          message: "Choose an Employee to update:",
+          choices: function () {
+            var employeeArray = [];
+            result.forEach(result => {
+              employeeArray.push(
+                result.id+" "+result.first_name+" "+result.last_name
+              );
+            })
+            return employeeArray;
+          }
+        }
+      ])
+   
+      .then(function (answer) {
+        console.log(answer);
+        const name = answer.employeeName;
+      
+        connection.query("SELECT * FROM roles", function (err, res) {
+          inquirer
+            .prompt([
+              {
+                name: "role",
+                type: "list",
+                message: "Chose their new role",
+                choices: function () {
+                  var roleArray = [];
+                  res.forEach(res => {
+                    roleArray.push(
+                      res.title)
+                  })
+                  return roleArray;
+                }
               }
-            });
-
-            response.forEach((employee) => {
-              if (
-                answer.chosenEmployee ===
-                `${employee.first_name} ${employee.last_name}`
-              ) {
-                employeeId = employee.id;
-              }
-            });
-
-            let sql2 = `
-                UPDATE employees
-                SET employees.role_id = ?
-                WHERE employees.id = ?
-                `;
-            connection.query(
-                sql2,
-              [newTitleId, employeeId],
-              (error) => {
-                if (error) throw error;
-
-                // Validation message, confirming employee role has been updated
-                console.log("\n ==> Employee Role updated successfully <== \n");
-
-
+            ]).then(function (roleAnswer) {
+              let role = roleAnswer.role;
+              console.log(role);
+              connection.query('SELECT * FROM roles WHERE title = ?', [role], function (err, res) {
+                if (err) throw (err);
+                let roleId = res[0].id;
+   
+                let query = `
+                  UPDATE employees
+                  SET role_id = ?
+                  WHERE CONCAT(id," ",first_name," ",last_name) =  ?`;
+                let values = [parseInt(roleId), name]
+        
+                connection.query(query, values,
+                  function (err, res, fields) {
+                  })
+                
+                console.log(`\n ==> ${name}'s role has been updated to: ${role}. <== \n`);
                 initialList();
-            }
-        );
-        });
-    });
-});
+              })
+            })
+        })
+      })
+  })
 };
