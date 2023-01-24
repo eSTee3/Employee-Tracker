@@ -110,8 +110,7 @@ function showAllRoles() {
         
             console.table(res);        
             initialList();
-    });
-        
+    });       
 }
 
 // ShowAllEmployees function with a CASE statement that ensures "Self" is displayed for any managers (with NULL empty manager_id)
@@ -148,7 +147,6 @@ function showAllEmployees() {
             console.table(res);        
             initialList();
     });
-        
 }
 
 const addNewDepartment = () => {
@@ -175,9 +173,7 @@ const addNewDepartment = () => {
             initialList();
                 });
             });
-
 };
-
 
 const addNewRole = () => {
     // Provides a list of roles in the system, for help with choosing a role
@@ -350,8 +346,6 @@ const addNewEmployee = () => {
     });
 };
 
-
-
 // Function to update an employee's Role
 function updateEmployeeRole() {
   connection.query('SELECT * FROM employees', function (err, result) {
@@ -372,8 +366,7 @@ function updateEmployeeRole() {
             return employeeArray;
           }
         }
-      ])
-   
+      ])   
       .then(function (answer) {
         console.log(answer);
         const name = answer.employeeName;
