@@ -32,6 +32,7 @@ function initialList() {
             "Add a new Department",
             "Add a new Employee",
             "Update an Employee's Role",
+            "Total Budget By Department",
             "I don't need anything else."
         ]
     }).then(function ({ task }) {
@@ -62,6 +63,10 @@ function initialList() {
 
             case "Update an Employee's Role":
               updateEmployeeRole();
+              break;
+            
+            case "Total Budget By Department":
+              deptBudgets();
               break;
            
             case "I don't need anything else.":
@@ -412,3 +417,26 @@ function updateEmployeeRole() {
       })
   })
 };
+
+// ShowAllRoles function
+function deptBudgets() {
+  console.log(`Here's a list of departments, with their current budgets:\n`);
+
+  let query = `
+      SELECT dept.name as "Department",
+      SUM(role.salary) as "Total Budget"
+      FROM departments dept
+      JOIN roles role
+      ON dept.id=role.department_id
+      JOIN employees emp
+      ON role.id=emp.role_id
+      GROUP BY dept.name      
+      ;`
+      
+      connection.query(query, function (err, res) {
+          if (err) throw err;
+      
+          console.table(res);        
+          initialList();
+  });       
+}
