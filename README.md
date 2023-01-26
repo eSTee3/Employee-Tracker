@@ -70,6 +70,9 @@ I present you with a CLI-based application that will allow the end user to enact
 - Update a current Employee's Role
 - View the total budget for each Department
 
+# Table Schema
+![alt text](./resources/Table%20Schema.png)
+
 [Back to Top](#technologies-used)
 ## User Story
 **AS A** business owner... **I WANT** to be able to view and manage the departments, roles, and employees in my company... **SO THAT** I can organize and plan my business.
