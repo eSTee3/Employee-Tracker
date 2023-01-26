@@ -18,12 +18,35 @@ connection.connect(function (err) {
 });
 
 function initialList() {
+  console.log(`
+ 
+
+            ███████╗███████╗████████╗███████╗███████╗██████╗                     
+            ██╔════╝██╔════╝╚══██╔══╝██╔════╝██╔════╝╚════██╗                    
+            █████╗  ███████╗   ██║   █████╗  █████╗   █████╔╝                    
+            ██╔══╝  ╚════██║   ██║   ██╔══╝  ██╔══╝   ╚═══██╗                    
+            ███████╗███████║   ██║   ███████╗███████╗██████╔╝                    
+            ╚══════╝╚══════╝   ╚═╝   ╚══════╝╚══════╝╚═════╝                     
+  ███████╗███╗   ███╗██████╗ ██╗      ██████╗ ██╗   ██╗███████╗███████╗
+  ██╔════╝████╗ ████║██╔══██╗██║     ██╔═══██╗╚██╗ ██╔╝██╔════╝██╔════╝
+  █████╗  ██╔████╔██║██████╔╝██║     ██║   ██║ ╚████╔╝ █████╗  █████╗  
+  ██╔══╝  ██║╚██╔╝██║██╔═══╝ ██║     ██║   ██║  ╚██╔╝  ██╔══╝  ██╔══╝  
+  ███████╗██║ ╚═╝ ██║██║     ███████╗╚██████╔╝   ██║   ███████╗███████╗
+  ╚══════╝╚═╝     ╚═╝╚═╝     ╚══════╝ ╚═════╝    ╚═╝   ╚══════╝╚══════╝
+        ████████╗██████╗  █████╗  ██████╗██╗  ██╗███████╗██████╗             
+        ╚══██╔══╝██╔══██╗██╔══██╗██╔════╝██║ ██╔╝██╔════╝██╔══██╗            
+           ██║   ██████╔╝███████║██║     █████╔╝ █████╗  ██████╔╝            
+           ██║   ██╔══██╗██╔══██║██║     ██╔═██╗ ██╔══╝  ██╔══██╗            
+           ██║   ██║  ██║██║  ██║╚██████╗██║  ██╗███████╗██║  ██║            
+           ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝            
+                                                                       
+`)
     inquirer
     .prompt({
         type: 'list',
         pageSize: 20,
         name: 'task',
-        message: 'Please choose an action:',
+        message: 'Please choose an action below:\n',
         choices: [
             "View all Departments",
             "View all Roles",
@@ -154,6 +177,7 @@ function showAllEmployees() {
     });
 }
 
+// Functiona to add a new Department
 const addNewDepartment = () => {
     // Starts the question/answer process for creation of a new department
     inquirer.prompt([
@@ -180,30 +204,8 @@ const addNewDepartment = () => {
             });
 };
 
+// Function to add a new Role
 const addNewRole = () => {
-    // Provides a list of roles in the system, for help with choosing a role
-    var query = `
-        SELECT id,
-          name 
-        FROM departments
-        `;
-      
-        connection.query(query, function (err, res) {
-          if (err) throw err;
-      
-          let deptChoices = res.map(({ id, name }) => ({
-            value: id, name: `${name}`
-          }));
-    
-          console.log("\n\n\n");  
-          console.table(res);
-          console.log("NOTE: Please reference the above table when selecting a Department.\n")
-
-          promptRoles(deptChoices);
-        });
-    }
-    // Starts the question/answer process for creation of a new employee
-    function promptRoles(deptChoices) {
     inquirer.prompt([
       {
         type: 'input',
@@ -258,7 +260,7 @@ const addNewRole = () => {
 
 // Add a new Employee
 const addNewEmployee = () => {
-    // Provides a list of roles in the system
+    // Creates a list of roles in the system
     var query = `
         SELECT id,
             title,
@@ -420,16 +422,16 @@ function updateEmployeeRole() {
 
 // ShowAllRoles function
 function deptBudgets() {
-  console.log(`Here's a list of departments, with their current budgets:\n`);
+  console.log(`\nHere's a list of departments, with their current budgets:\n`);
 
   let query = `
       SELECT dept.name as "Department",
       SUM(role.salary) as "Total Budget"
       FROM departments dept
-      JOIN roles role
-      ON dept.id=role.department_id
-      JOIN employees emp
-      ON role.id=emp.role_id
+        JOIN roles role
+          ON dept.id=role.department_id
+        JOIN employees emp
+          ON role.id=emp.role_id
       GROUP BY dept.name      
       ;`
       
